@@ -1,0 +1,1 @@
+const secons require("./app")
