@@ -13,11 +13,7 @@ const User = mongoose.model("users", {
   email: {
     type: String,
     required: true,
-    validator(value) {
-      if (!isEmail(value)) {
-        throw new Error("Invalid Email");
-      }
-    },
+    validate: [isEmail, "Invalid Email"],
   },
   password: {
     type: String,
