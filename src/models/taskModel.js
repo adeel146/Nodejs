@@ -4,7 +4,7 @@ const Tasks = mongoose.model("Task", {
   description: {
     type: String,
     trim: true,
-    require: true,
+    required: true,
   },
   completed: {
     type: Boolean,
@@ -12,4 +12,4 @@ const Tasks = mongoose.model("Task", {
   },
 });
 
-exports.default = Tasks;
+module.exports = Tasks;
