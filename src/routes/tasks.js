@@ -1,10 +1,11 @@
 const express = require("express");
 const Tasks = require("../models/taskModel");
+const verifyToken = require("../middleware/auth");
 const taskRoute = new express.Router();
 
-taskRoute.post("/task", async (req, res) => {
-  const newTask = new Tasks(req.body);
+taskRoute.post("/task", verifyToken, async (req, res) => {
   try {
+    const newTask = new Tasks({ ...req.body, owner: req.user._id });
     let result = await newTask.save();
     res.status(201).send(result);
   } catch (error) {
@@ -12,9 +13,9 @@ taskRoute.post("/task", async (req, res) => {
   }
 });
 
-taskRoute.get("/tasks", async (req, res) => {
+taskRoute.get("/tasks", verifyToken, async (req, res) => {
   try {
-    let result = await Tasks.find({});
+    let result = await Tasks.find({ owner: req.user._id });
     res.status(201).send(result);
   } catch (error) {
     res.status(500).send();

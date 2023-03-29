@@ -1,6 +1,8 @@
 const express = require("express");
 const User = require("../models/userModel");
 const userRoute = new express.Router();
+const bcrypt = require("bcrypt");
+const verifyToken = require("../middleware/auth");
 
 userRoute.post("/user", async (req, res) => {
   const newUser = new User(req.body);
@@ -12,8 +14,31 @@ userRoute.post("/user", async (req, res) => {
     res.status(400).send(error);
   }
 });
+userRoute.post("/user/login", async (req, res) => {
+  const { email, password } = req.body;
+  try {
+    let user = await User.findUserByCredentials(email, password);
+    const token = await user.generateAuthToken();
+    user.tokens = user.tokens.concat({ token });
+    await user.save();
+    res.send({ user, token });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
+userRoute.post("/user/logout", verifyToken, async (req, res) => {
+  try {
+    req.user.tokens = req.user.tokens.filter(
+      (token) => token.token !== req.token
+    );
+    await req.user.save();
+    res.send("Successfully Logout");
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+});
 
-userRoute.get("/users", async (req, res) => {
+userRoute.get("/users", verifyToken, async (req, res) => {
   try {
     let result = await User.find({});
     res.send(result);
@@ -44,14 +69,13 @@ userRoute.put("/users/:id", async (req, res) => {
 
   const _id = req.params.id;
   try {
-    const result = await User.findByIdAndUpdate(_id, req.body, {
-      runValidators: true,
-      returnDocument: "after",
-    });
-    if (!result) {
+    const user = await User.findById(_id);
+    if (!user) {
       return res.status(404).send();
     }
-    res.send(result);
+    changerequest.forEach((field) => (user[field] = req.body[field]));
+    await user.save();
+    res.send(user);
   } catch (error) {
     res.status(500).send(error);
   }
