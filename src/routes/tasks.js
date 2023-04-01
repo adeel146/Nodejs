@@ -14,8 +14,12 @@ taskRoute.post("/task", verifyToken, async (req, res) => {
 });
 
 taskRoute.get("/tasks", verifyToken, async (req, res) => {
+  let params = req.query;
   try {
-    let result = await Tasks.find({ owner: req.user._id });
+    let result = await Tasks.find({ owner: req.user._id })
+      .skip(params.pageNumber || 0)
+      .limit(params.pageSize || 10)
+      .sort({ completed: false, createdAt: 1 });
     res.status(201).send(result);
   } catch (error) {
     res.status(500).send();

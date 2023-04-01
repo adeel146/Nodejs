@@ -3,47 +3,50 @@ const { isEmail } = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    trim: true,
-  },
-  age: {
-    type: Number,
-    default: 0,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-    validate: [isEmail, "Invalid Email"],
-  },
-  password: {
-    type: String,
-    required: true,
-    trim: true,
-    minlength: 6,
-    validate(value) {
-      if (value.toLowerCase().includes("password")) {
-        throw new Error("Cannot set property Password");
-      }
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      trim: true,
     },
-  },
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true,
+    age: {
+      type: Number,
+      default: 0,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: [isEmail, "Invalid Email"],
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 6,
+      validate(value) {
+        if (value.toLowerCase().includes("password")) {
+          throw new Error("Cannot set property Password");
+        }
       },
     },
-  ],
-});
+    tokens: [
+      {
+        token: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 //define virtual connection to tasks
 
 userSchema.virtual("mytasks", {
   ref: "Task",
-  localField: "_id", //reference from this schema  field  
+  localField: "_id", //reference from this schema  field
   foreignField: "owner", //reference to the Taks Schema field
 });
 
